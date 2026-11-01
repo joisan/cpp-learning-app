@@ -91,7 +91,7 @@ window.addEventListener('DOMContentLoaded', async () => {
       .from('user_progress')
       .select('progress_data')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.log('Query note:', error.message);
