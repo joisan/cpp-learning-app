@@ -1,6 +1,57 @@
+
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
+  <!-- Firebase App (Modular CDN Imports) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // TODO: Replace with your project's actual configuration object from Step 2
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.fireapp.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Example function to save progress automatically to Firestore
+  window.saveProgressToCloud = async function(userId, progressData) {
+    try {
+      await setDoc(doc(db, "users_progress", userId), {
+        ...progressData,
+        lastUpdated: new Date().toISOString()
+      }, { merge: true });
+      console.log("Progress successfully synced to cloud!");
+    } catch (e) {
+      console.error("Error writing progress to Firestore: ", e);
+    }
+  };
+
+  // Example function to retrieve progress when switching devices
+  window.loadProgressFromCloud = async function(userId) {
+    try {
+      const docRef = doc(db, "users_progress", userId);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        console.log("Retrieved cloud progress:", docSnap.data());
+        return docSnap.data();
+      } else {
+        console.log("No cloud record found. Using local storage default.");
+        return null;
+      }
+    } catch (e) {
+      console.error("Error reading progress from Firestore: ", e);
+      return null;
+    }
+  };
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CppMaster - Interactive C++ Learning Platform</title>
