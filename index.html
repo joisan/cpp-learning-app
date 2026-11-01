@@ -1,59 +1,33 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-  <!-- Supabase JS CDN Library -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // Replace these with your actual Supabase Project URL and anon API Key from Step 2
   const SUPABASE_URL = 'https://ebynlaymdjhkaogathxg.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_U0AD16eLqkaPyXiPPX6fzg_eF_XL0fT';
-
-  // Initialize the Supabase client
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // Function to save learning progress to Supabase
   async function saveProgressToSupabase(userId, progressObject) {
-    const { data, error } = await supabaseClient
+    const { error } = await supabaseClient
       .from('user_progress')
-      .upsert({ 
-        user_id: userId, 
+      .upsert({
+        user_id: userId,
         progress_data: progressObject,
-        updated_at: new Date()
+        updated_at: new Date().toISOString()
       }, { onConflict: 'user_id' });
-
-    if (error) {
-      console.error('Error saving progress to Supabase:', error.message);
-    } else {
-      console.log('Progress successfully synced to Supabase!');
-    }
+    if (error) console.error('Supabase save error:', error.message);
+    else console.log('Progress synced to Supabase');
   }
 
-  // Function to load learning progress from Supabase
   async function loadProgressFromSupabase(userId) {
-  try {
     const { data, error } = await supabaseClient
       .from('user_progress')
       .select('progress_data')
-      .eq('user_id', userId); // Removed .single() to prevent errors when no record exists
-
-    if (error) {
-      console.log('Query note:', error.message);
-      return null;
-    }
-    
-    // If a record is found in the cloud, return its progress data
-    if (data && data.length > 0) {
-      return data[0].progress_data;
-    }
-    
-    // If no record exists yet, return null cleanly without errors
-    return null;
-  } catch (err) {
-    console.error('Network error while loading from Supabase:', err);
-    return null;
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (error) { console.error('Supabase load error:', error.message); return null; }
+    return data ? data.progress_data : null;
   }
-}
 </script>
   <script>
     // Run this function automatically when the web page loads
@@ -1045,11 +1019,18 @@ int main() {
       updateUIHeaderAndDashboard();
     }
 
-    function saveLocalState() {
-      userState.lastActiveDate = new Date().toISOString();
-      localStorage.setItem('cppmaster_user_state', JSON.stringify(userState));
-      updateUIHeaderAndDashboard();
-    }
+    let cloudSyncTimer = null;
+function saveLocalState() {
+  userState.lastActiveDate = new Date().toISOString();
+  localStorage.setItem('cppmaster_user_state', JSON.stringify(userState));
+  updateUIHeaderAndDashboard();
+
+  // Wait 1.5s after the last change, then push to Supabase
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = setTimeout(() => {
+    saveProgressToSupabase(userState.userId, userState);
+  }, 1500);
+}
 
     function updateUIHeaderAndDashboard() {
       document.getElementById('header-streak').textContent = `${userState.streakDays} Day${userState.streakDays > 1 ? 's' : ''}`;
@@ -1923,11 +1904,23 @@ int main() {
     }
 
     /* Initialize Application on Load */
-    window.onload = function() {
-      loadLocalState();
-      renderRoadmap();
-      openWeekLesson(userState.currentWeek);
-    };
+    window.onload = async function() {
+  loadLocalState();
+
+  const cloud = await loadProgressFromSupabase(userState.userId);
+  if (cloud && new Date(cloud.lastActiveDate) > new Date(userState.lastActiveDate)) {
+    // Cloud copy is newer: use it
+    userState = { ...DEFAULT_STATE, ...cloud };
+    localStorage.setItem('cppmaster_user_state', JSON.stringify(userState));
+    console.log('Progress restored from Supabase');
+  } else {
+    // No cloud copy yet (or local is newer): upload local
+    saveProgressToSupabase(userState.userId, userState);
+  }
+
+  updateUIHeaderAndDashboard();
+  openWeekLesson(userState.currentWeek);
+};
   </script>
 </body>
 </html>
