@@ -1,56 +1,49 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-  <!-- Firebase App (Modular CDN Imports) -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  <!-- Supabase JS CDN Library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  // TODO: Replace with your project's actual configuration object from Step 2
-  const firebaseConfig = {
-  apiKey: "AIzaSyCxu8Q6FQT4-BH__8oo8ZgPcNl6TH24u_o",
-  authDomain: "learningprogramming-2331f.firebaseapp.com",
-  projectId: "learningprogramming-2331f",
-  storageBucket: "learningprogramming-2331f.firebasestorage.app",
-  messagingSenderId: "151805825959",
-  appId: "1:151805825959:web:563d30defd03e80d725c82",
-  measurementId: "G-4E7R4X9T9Q"
-};
+<script>
+  // Replace these with your actual Supabase Project URL and anon API Key from Step 2
+  const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+  const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  // Initialize the Supabase client
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // Example function to save progress automatically to Firestore
-  window.saveProgressToCloud = async function(userId, progressData) {
-    try {
-      await setDoc(doc(db, "users_progress", userId), {
-        ...progressData,
-        lastUpdated: new Date().toISOString()
-      }, { merge: true });
-      console.log("Progress successfully synced to cloud!");
-    } catch (e) {
-      console.error("Error writing progress to Firestore: ", e);
+  // Function to save learning progress to Supabase
+  async function saveProgressToSupabase(userId, progressObject) {
+    const { data, error } = await supabaseClient
+      .from('user_progress')
+      .upsert({ 
+        user_id: userId, 
+        progress_data: progressObject,
+        updated_at: new Date()
+      }, { onConflict: 'user_id' });
+
+    if (error) {
+      console.error('Error saving progress to Supabase:', error.message);
+    } else {
+      console.log('Progress successfully synced to Supabase!');
     }
-  };
+  }
 
-  // Example function to retrieve progress when switching devices
-  window.loadProgressFromCloud = async function(userId) {
-    try {
-      const docRef = doc(db, "users_progress", userId);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        console.log("Retrieved cloud progress:", docSnap.data());
-        return docSnap.data();
-      } else {
-        console.log("No cloud record found. Using local storage default.");
-        return null;
-      }
-    } catch (e) {
-      console.error("Error reading progress from Firestore: ", e);
+  // Function to load learning progress from Supabase
+  async function loadProgressFromSupabase(userId) {
+    const { data, error } = await supabaseClient
+      .from('user_progress')
+      .select('progress_data')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      console.log('No existing cloud progress found or error:', error.message);
       return null;
     }
-  };
+    
+    return data ? data.progress_data : null;
+  }
 </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
