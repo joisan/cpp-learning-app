@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CppMaster - Interactive C++ Learning Platform</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cpp: {
+              blue: '#00599C',
+              lightBlue: '#659AD2',
+              dark: '#0B1120',
+              card: '#1E293B',
+              accent: '#38BDF8',
+              success: '#22C55E',
+              warning: '#F59E0B',
+              danger: '#EF4444'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'Consolas', 'Courier New', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    /* 3D Card Flip Effects */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
+
+  <!-- App Header & Navigation -->
+  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('roadmap')">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-sky-400 flex items-center justify-center shadow-lg shadow-sky-500/20">
+            <span class="font-mono text-xl font-black text-white">C++</span>
+          </div>
+          <div>
+            <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-white via-slate-200 to-sky-400 bg-clip-text text-transparent">CppMaster</h1>
+            <p class="text-xs text-slate-400 hidden sm:block">Interactive 12-Week Masterclass</p>
+          </div>
+        </div>
+
+        <!-- Header Stats & Quick Actions -->
+        <div class="flex items-center space-x-3 sm:space-x-6">
+          <!-- Streak Indicator -->
+          <div class="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60" title="Daily Streak">
+            <i class="fa-solid font-bold text-amber-500 fa-fire animate-pulse"></i>
+            <span id="header-streak" class="text-xs font-semibold text-slate-200">1 Day</span>
+          </div>
+
+          <!-- Total XP -->
+          <div class="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60" title="Total XP">
+            <i class="fa-solid fa-bolt text-yellow-400"></i>
+            <span id="header-xp" class="text-xs font-semibold text-slate-200">0 XP</span>
+          </div>
+
+          <!-- Sound Mute Toggle -->
+          <button id="sound-toggle" onclick="toggleAudio()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors" title="Toggle Audio Sound Effects">
+            <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+          </button>
+
+          <!-- User Sync Status Button -->
+          <button onclick="switchTab('sync')" class="flex items-center space-x-2 p-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-sky-900/40 hover:bg-sky-800/50 border border-sky-700/50 text-sky-300 text-xs font-medium transition-colors">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span class="hidden sm:inline" id="cloud-status-text">Cloud Sync</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Layout Container -->
+  <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-full md:w-64 flex-shrink-0">
+      <div class="bg-slate-900/80 rounded-2xl border border-slate-800 p-4 sticky top-20 shadow-xl backdrop-blur">
+        <!-- User Badge Quick Info -->
+        <div class="p-3 mb-4 rounded-xl bg-slate-800/50 border border-slate-700/50 flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white font-bold" id="user-avatar">
+            U
+          </div>
+          <div class="overflow-hidden">
+            <div id="user-display-name" class="font-semibold text-sm truncate">Learner</div>
+            <div id="user-level-badge" class="text-xs text-sky-400 truncate">Week 1 • Beginner</div>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <nav class="space-y-1">
+          <button id="nav-roadmap" onclick="switchTab('roadmap')" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all bg-sky-600 text-white shadow-lg shadow-sky-600/20">
+            <i class="fa-solid fa-map w-5 text-center"></i>
+            <span>12-Week Roadmap</span>
+          </button>
+
+          <button id="nav-lesson" onclick="switchTab('lesson')" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800">
+            <i class="fa-solid fa-book-open w-5 text-center"></i>
+            <span>Current Lesson</span>
+          </button>
+
+          <button id="nav-typing" onclick="switchTab('typing')" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800">
+            <i class="fa-solid fa-keyboard w-5 text-center"></i>
+            <span>Syntax Lab</span>
+          </button>
+
+          <button id="nav-quiz" onclick="switchTab('quiz')" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800">
+            <i class="fa-solid fa-graduation-cap w-5 text-center"></i>
+            <span>Daily Quiz (15 Qs)</span>
+          </button>
+
+          <button id="nav-dashboard" onclick="switchTab('dashboard')" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800">
+            <i class="fa-solid fa-chart-line w-5 text-center"></i>
+            <span>Progress & Stats</span>
+          </button>
+
+          <button id="nav-sync" onclick="switchTab('sync')" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800">
+            <i class="fa-solid fa-sliders w-5 text-center"></i>
+            <span>Sync & Data</span>
+          </button>
+        </nav>
+
+        <!-- Daily Target Progress Card -->
+        <div class="mt-6 pt-4 border-t border-slate-800">
+          <div class="flex justify-between items-center text-xs font-semibold text-slate-400 mb-2">
+            <span>Daily Goal (30 mins)</span>
+            <span id="daily-progress-percent">0%</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div id="daily-progress-bar" class="bg-gradient-to-r from-sky-500 to-emerald-400 h-2 rounded-full w-0 transition-all duration-500"></div>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-2">15m Interactive + 15m Dynamic Quiz</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Dynamic Content Views -->
+    <main class="flex-1 min-w-0">
+
+      <!-- VIEW 1: ROADMAP VIEW -->
+      <section id="view-roadmap" class="space-y-6">
+        <div class="bg-slate-900/80 rounded-2xl border border-slate-800 p-6 shadow-xl">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 class="text-2xl font-bold text-white">C++ Learning Roadmap</h2>
+              <p class="text-slate-400 text-sm mt-1">12 Weeks • Structured W3Schools Curriculum • Daily 30-min Modules</p>
+            </div>
+            <button onclick="startCurrentActiveLesson()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-semibold shadow-lg shadow-sky-500/25 flex items-center justify-center space-x-2 transition-all">
+              <i class="fa-solid fa-play"></i>
+              <span>Continue Learning</span>
+            </button>
+          </div>
+
+          <!-- Overall Progress Bar -->
+          <div class="p-4 rounded-xl bg-slate-800/40 border border-slate-800 space-y-2 mb-8">
+            <div class="flex justify-between text-sm font-medium">
+              <span class="text-slate-300">Curriculum Completion</span>
+              <span id="roadmap-completion-text" class="text-sky-400">0 of 12 Weeks Completed</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+              <div id="roadmap-progress-bar" class="bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-400 h-3 rounded-full w-0 transition-all duration-500"></div>
+            </div>
+          </div>
+
+          <!-- 12-Week Accordion Roadmap List -->
+          <div id="roadmap-weeks-container" class="space-y-4">
+            <!-- Programmatically Dynamic Generated Week Cards -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: INTERACTIVE LESSON & FLASHCARDS -->
+      <section id="view-lesson" class="hidden space-y-6">
+        <div class="bg-slate-900/80 rounded-2xl border border-slate-800 p-6 shadow-xl">
+          <!-- Lesson Breadcrumb & Title -->
+          <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
+            <div>
+              <span id="lesson-week-tag" class="text-xs font-semibold tracking-wider text-sky-400 uppercase">Week 1 • Lesson 1</span>
+              <h2 id="lesson-title" class="text-2xl font-bold text-white mt-1">C++ Introduction & Syntax</h2>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="switchTab('typing')" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 flex items-center space-x-1.5">
+                <i class="fa-solid fa-keyboard text-sky-400"></i>
+                <span>Typing Mode</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Mode Toggle Tabs (Flashcards vs Reader) -->
+          <div class="flex space-x-2 mb-6 bg-slate-800/60 p-1 rounded-xl w-fit border border-slate-700/50">
+            <button id="mode-flashcard-btn" onclick="setLessonDisplayMode('flashcard')" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 text-white shadow-sm transition-all">
+              <i class="fa-solid fa-clone mr-1.5"></i> Interactive Flashcards
+            </button>
+            <button id="mode-text-btn" onclick="setLessonDisplayMode('text')" class="px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all">
+              <i class="fa-solid fa-file-lines mr-1.5"></i> Full Text Explanation
+            </button>
+          </div>
+
+          <!-- Flashcard Container -->
+          <div id="flashcard-container-wrapper" class="space-y-6">
+            <div id="flashcard-card" class="perspective-1000 w-full min-h-[320px] cursor-pointer" onclick="flipCard()">
+              <div id="flashcard-inner" class="relative w-full h-full min-h-[320px] transition-transform duration-500 transform-style-3d bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl">
+                <!-- Front Side -->
+                <div id="flashcard-front" class="absolute inset-0 backface-hidden p-6 sm:p-8 flex flex-col justify-between">
+                  <div class="flex justify-between items-start">
+                    <span class="text-xs font-mono px-2.5 py-1 rounded bg-sky-900/60 text-sky-300 border border-sky-700/40" id="card-category">CONCEPT</span>
+                    <span class="text-xs text-slate-500">Click to flip <i class="fa-solid fa-rotate text-sky-400 ml-1"></i></span>
+                  </div>
+                  <div class="my-auto py-6">
+                    <h3 id="card-front-title" class="text-xl sm:text-2xl font-bold text-white mb-3">What is std::cout?</h3>
+                    <p id="card-front-desc" class="text-slate-300 text-sm leading-relaxed">Click to see standard output explanation and syntax breakdown.</p>
+                  </div>
+                  <div class="text-xs text-slate-400 font-mono flex items-center space-x-2">
+                    <i class="fa-solid fa-lightbulb text-amber-400"></i>
+                    <span>Tip: Focus on the syntax structure.</span>
+                  </div>
+                </div>
+
+                <!-- Back Side (Flipped) -->
+                <div id="flashcard-back" class="absolute inset-0 backface-hidden rotate-y-180 p-6 sm:p-8 flex flex-col justify-between bg-slate-900 border border-slate-700 rounded-2xl">
+                  <div class="flex justify-between items-start">
+                    <span class="text-xs font-mono px-2.5 py-1 rounded bg-emerald-900/60 text-emerald-300 border border-emerald-700/40">CODE EXAMPLE</span>
+                    <span class="text-xs text-slate-500">Click to flip back <i class="fa-solid fa-rotate text-sky-400 ml-1"></i></span>
+                  </div>
+                  <div class="my-auto py-4 overflow-x-auto">
+                    <pre><code id="card-back-code" class="font-mono text-xs sm:text-sm text-sky-300 bg-slate-950 p-4 rounded-xl border border-slate-800 block overflow-x-auto">#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    cout &lt;&lt; "Hello World!";
+    return 0;
+}</code></pre>
+                    <p id="card-back-explanation" class="text-xs text-slate-300 mt-3">std::cout (see-out) is used together with insertion operator (&lt;&lt;) to print text output.</p>
+                  </div>
+                  <div class="text-xs text-emerald-400 font-medium flex items-center space-x-1">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>Key Concept Highlight</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Flashcard Controls -->
+            <div class="flex items-center justify-between pt-2">
+              <button onclick="prevFlashcard()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium flex items-center space-x-2 transition-all">
+                <i class="fa-solid fa-chevron-left"></i>
+                <span>Previous</span>
+              </button>
+              <span id="flashcard-counter" class="text-xs text-slate-400 font-mono font-semibold">Card 1 of 4</span>
+              <button onclick="nextFlashcard()" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium flex items-center space-x-2 transition-all shadow-lg shadow-sky-600/20">
+                <span>Next</span>
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Full Text Reader Container (Alternative Mode) -->
+          <div id="text-reader-container" class="hidden space-y-6 bg-slate-950/60 p-6 rounded-2xl border border-slate-800 text-slate-300 text-sm leading-relaxed">
+            <div id="text-reader-content" class="prose prose-invert max-w-none space-y-4">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Transition to Quiz / Practice Button -->
+          <div class="mt-8 pt-6 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="text-xs text-slate-400 flex items-center space-x-2">
+              <i class="fa-regular fa-clock text-sky-400"></i>
+              <span>Completed 15-min Lesson Portion? Move to typing practice or quiz!</span>
+            </div>
+            <div class="flex space-x-3 w-full sm:w-auto">
+              <button onclick="switchTab('typing')" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition-all">
+                Practice Syntax
+              </button>
+              <button onclick="startQuizForCurrentLesson()" class="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>Start 15-Q Quiz</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: TYPING EXERCISE LAB -->
+      <section id="view-typing" class="hidden space-y-6">
+        <div class="bg-slate-900/80 rounded-2xl border border-slate-800 p-6 shadow-xl space-y-6">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div>
+              <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Hands-On Syntax Practice</span>
+              <h2 class="text-2xl font-bold text-white mt-1">C++ Code Typing Lab</h2>
+            </div>
+            <div class="text-xs font-mono text-slate-400">
+              Target Accuracy: <span class="text-emerald-400 font-bold">100%</span>
+            </div>
+          </div>
+
+          <!-- Prompt & Target Snippet -->
+          <div class="space-y-3">
+            <p id="typing-prompt" class="text-sm text-slate-300">Type the exact C++ statement below to print "Hello C++" to standard output with a newline:</p>
+            <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-sm text-sky-300 tracking-wide select-none" id="typing-target-display">
+              cout &lt;&lt; "Hello C++" &lt;&lt; endl;
+            </div>
+          </div>
+
+          <!-- User Interactive Typing Input -->
+          <div class="space-y-3">
+            <label class="block text-xs font-semibold text-slate-400">YOUR CODE INPUT:</label>
+            <textarea id="typing-input" rows="3" oninput="onTypingInputChange()" placeholder="Type the code snippet here exactly as shown above..." class="w-full bg-slate-950 border-2 border-slate-700 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-xl p-4 font-mono text-sm text-white placeholder-slate-600 outline-none transition-all resize-none"></textarea>
+          </div>
+
+          <!-- Live Real-Time Match Validation Box -->
+          <div id="typing-feedback-box" class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div id="typing-status-icon" class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-slate-400">
+                <i class="fa-solid fa-keyboard"></i>
+              </div>
+              <div>
+                <div id="typing-status-title" class="text-sm font-semibold text-slate-200">Start Typing...</div>
+                <div id="typing-status-sub" class="text-xs text-slate-400">Match character by character.</div>
+              </div>
+            </div>
+            <button id="typing-next-btn" disabled onclick="nextTypingExercise()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-500 font-semibold text-sm cursor-not-allowed transition-all">
+              Next Snippet <i class="fa-solid fa-arrow-right ml-1"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: DYNAMIC ASSESSMENT QUIZ ENGINE -->
+      <section id="view-quiz" class="hidden space-y-6">
+        <!-- Quiz Intro / Start Card (When Quiz Not Active) -->
+        <div id="quiz-start-card" class="bg-slate-900/80 rounded-2xl border border-slate-800 p-6 sm:p-8 shadow-xl text-center space-y-6">
+          <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white text-3xl mx-auto shadow-lg shadow-sky-500/30">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div class="max-w-md mx-auto">
+            <h2 class="text-2xl font-bold text-white">Daily C++ Quiz Assessment</h2>
+            <p class="text-slate-400 text-sm mt-2">15 dynamically generated questions tailored to your active week topic. Options and values shuffle on every attempt to test true conceptual understanding!</p>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 max-w-sm mx-auto text-center py-2">
+            <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700/50">
+              <div class="text-lg font-bold text-sky-400">15</div>
+              <div class="text-[11px] text-slate-400">Questions</div>
+            </div>
+            <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700/50">
+              <div class="text-lg font-bold text-emerald-400">15m</div>
+              <div class="text-[11px] text-slate-400">Est. Time</div>
+            </div>
+            <div class="p-3 bg-slate-800/60 rounded-xl border border-slate-700/50">
+              <div class="text-lg font-bold text-purple-400">Dynamic</div>
+              <div class="text-[11px] text-slate-400">Variations</div>
+            </div>
+          </div>
+
+          <button onclick="startDynamicQuiz()" class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-sky-500 via-indigo-600 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-base shadow-xl shadow-sky-500/25 transition-all transform hover:-translate-y-0.5">
+            Begin Quiz Attempt Now
+          </button>
+        </div>
+
+        <!-- Active Quiz Container -->
+        <div id="quiz-active-card" class="hidden bg-slate-900/80 rounded-2xl border border-slate-800 p-6 shadow-xl space-y-6">
+          <!-- Quiz Top Progress Header -->
+          <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div>
+              <span id="quiz-topic-tag" class="text-xs font-semibold text-sky-400 uppercase tracking-wide">Week 1 Assessment</span>
+              <div class="text-sm font-bold text-slate-200 mt-0.5" id="quiz-question-counter">Question 1 of 15</div>
+            </div>
+            <div class="flex items-center space-x-3">
+              <div id="quiz-timer" class="font-mono text-sm px-3 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 flex items-center space-x-1.5">
+                <i class="fa-regular fa-clock text-sky-400"></i>
+                <span id="quiz-time-display">00:00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Question Progress Bar -->
+          <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div id="quiz-progress-bar" class="bg-sky-500 h-2 rounded-full w-1/15 transition-all duration-300"></div>
+          </div>
+
+          <!-- Dynamic Question Area -->
+          <div id="quiz-question-wrapper" class="space-y-6 pt-2">
+            <h3 id="quiz-question-text" class="text-lg sm:text-xl font-semibold text-white leading-relaxed">
+              Loading question...
+            </h3>
+
+            <!-- Code Context Snippet (if available) -->
+            <pre id="quiz-code-box" class="hidden bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs sm:text-sm text-sky-300 overflow-x-auto"><code id="quiz-code-text"></code></pre>
+
+            <!-- Options Container (For Multiple Choice) -->
+            <div id="quiz-options-container" class="grid grid-cols-1 gap-3">
+              <!-- Generated dynamically (A, B, C, D) -->
+            </div>
+
+            <!-- Input Container (For Typing Questions) -->
+            <div id="quiz-typing-container" class="hidden space-y-3">
+              <input type="text" id="quiz-type-input" placeholder="Type your answer or code snippet..." class="w-full bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl px-4 py-3 font-mono text-sm text-white outline-none">
+            </div>
+          </div>
+
+          <!-- Action & Explanation Footer -->
+          <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
+            <div id="quiz-feedback-banner" class="text-xs font-semibold hidden flex items-center space-x-2">
+              <i id="quiz-feedback-icon" class="fa-solid fa-circle-check text-base"></i>
+              <span id="quiz-feedback-msg">Correct answer!</span>
+            </div>
+            <button id="quiz-submit-btn" onclick="submitQuizAnswer()" class="ml-auto px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm shadow-lg shadow-sky-600/20 transition-all">
+              Submit Answer
+            </button>
+          </div>
+        </div>
+
+        <!-- Quiz Score & Feedback Results Card -->
+        <div id="quiz-results-card" class="hidden bg-slate-900/80 rounded-2xl border border-slate-800 p-6 sm:p-8 shadow-xl space-y-6">
+          <div class="text-center space-y-3">
+            <div id="result-badge-icon" class="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500 flex items-center justify-center text-4xl mx-auto">
+              <i class="fa-solid fa-trophy"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-white" id="result-title">Assessment Completed!</h2>
+            <p class="text-slate-400 text-sm" id="result-sub">Great effort on completing your 15-question daily C++ assessment.</p>
+          </div>
+
+          <!-- Score Summary Stats -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 py-2">
+            <div class="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 text-center">
+              <div class="text-xs text-slate-400 font-medium">Final Score</div>
+              <div class="text-2xl font-black text-white mt-1" id="res-score-num">0 / 15</div>
+            </div>
+            <div class="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 text-center">
+              <div class="text-xs text-slate-400 font-medium">Accuracy</div>
+              <div class="text-2xl font-black text-sky-400 mt-1" id="res-accuracy-num">0%</div>
+            </div>
+            <div class="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 text-center">
+              <div class="text-xs text-slate-400 font-medium">XP Earned</div>
+              <div class="text-2xl font-black text-amber-400 mt-1" id="res-xp-num">+0 XP</div>
+            </div>
+            <div class="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 text-center">
+              <div class="text-xs text-slate-400 font-medium">Time Taken</div>
+              <div class="text-2xl font-black text-indigo-400 mt-1" id="res-time-num">00:00</div>
+            </div>
+          </div>
+
+          <!-- Answer Review Explanation Breakdown -->
+          <div class="space-y-4 pt-4 border-t border-slate-800">
+            <h3 class="text-base font-bold text-slate-200">Detailed Question Breakdown & Review</h3>
+            <div id="quiz-review-list" class="space-y-3 max-h-80 overflow-y-auto pr-2">
+              <!-- Dynamically Populated Review Items -->
+            </div>
+          </div>
+
+          <!-- Results Actions -->
+          <div class="flex flex-col sm:flex-row gap-3 pt-4">
+            <button onclick="startDynamicQuiz()" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm transition-all flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-rotate-right"></i>
+              <span>Try Dynamic Variation</span>
+            </button>
+            <button onclick="switchTab('roadmap')" class="flex-1 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm shadow-lg shadow-sky-600/20 transition-all flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-arrow-right"></i>
+              <span>Next Lesson Roadmap</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 5: PROGRESS DASHBOARD & ANALYTICS -->
+      <section id="view-dashboard" class="hidden space-y-6">
+        <div class="bg-slate-900/80 rounded-2xl border border-slate-800 p-6 shadow-xl space-y-6">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div>
+              <h2 class="text-2xl font-bold text-white">Learning Analytics & Progress</h2>
+              <p class="text-slate-400 text-sm mt-1">Track your 12-week C++ mastery stats and daily performance</p>
+            </div>
+          </div>
+
+          <!-- Top Stats Overview Cards -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 space-y-1">
+              <div class="text-xs font-semibold text-slate-400 flex items-center space-x-1.5">
+                <i class="fa-solid fa-trophy text-amber-400"></i>
+                <span>Total XP Earned</span>
+              </div>
+              <div class="text-2xl font-black text-white" id="dash-xp">0</div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 space-y-1">
+              <div class="text-xs font-semibold text-slate-400 flex items-center space-x-1.5">
+                <i class="fa-solid fa-fire text-rose-500"></i>
+                <span>Active Streak</span>
+              </div>
+              <div class="text-2xl font-black text-white" id="dash-streak">1 Days</div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 space-y-1">
+              <div class="text-xs font-semibold text-slate-400 flex items-center space-x-1.5">
+                <i class="fa-solid fa-check-double text-emerald-400"></i>
+                <span>Lessons Finished</span>
+              </div>
+              <div class="text-2xl font-black text-white" id="dash-lessons">0 / 12</div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/50 space-y-1">
+              <div class="text-xs font-semibold text-slate-400 flex items-center space-x-1.5">
+                <i class="fa-solid fa-chart-line text-sky-400"></i>
+                <span>Avg. Quiz Score</span>
+              </div>
+              <div class="text-2xl font-black text-white" id="dash-avg-score">0%</div>
+            </div>
+          </div>
+
+          <!-- Activity & Progress History List -->
+          <div class="space-y-4 pt-4 border-t border-slate-800">
+            <h3 class="text-lg font-bold text-white">Recent Quiz Attempts History</h3>
+            <div id="dash-history-list" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 6: SYNC & DATA MANAGEMENT -->
+      <section id="view-sync" class="hidden space-y-6">
+        <div class="bg-slate-900/80 rounded-2xl border border-slate-800 p-6 shadow-xl space-y-6">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div>
+              <h2 class="text-2xl font-bold text-white">Cloud Data & Synchronisation</h2>
+              <p class="text-slate-400 text-sm mt-1">Cross-device synchronization, manual JSON backup & user configuration</p>
+            </div>
+          </div>
+
+          <!-- Profile Settings -->
+          <div class="p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 space-y-4">
+            <h3 class="text-sm font-bold text-slate-200 uppercase tracking-wider">Learner Profile</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Learner Display Name</label>
+                <input type="text" id="sync-user-name" onchange="updateUserName(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white outline-none focus:border-sky-500">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-400 mb-1">Unique User Identifier (UID)</label>
+                <input type="text" id="sync-user-id" readonly class="w-full bg-slate-950/60 border border-slate-800 rounded-xl px-3.5 py-2 text-xs font-mono text-slate-400 select-all cursor-text">
+              </div>
+            </div>
+          </div>
+
+          <!-- Manual JSON Backup & Export -->
+          <div class="p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 space-y-4">
+            <h3 class="text-sm font-bold text-slate-200 uppercase tracking-wider">Manual Data Backup & Restore</h3>
+            <p class="text-xs text-slate-400">Export your progress snapshot as a JSON file to transfer between devices without requiring cloud accounts.</p>
+            
+            <div class="flex flex-wrap gap-3">
+              <button onclick="exportProgressJSON()" class="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold flex items-center space-x-2 transition-all shadow-md shadow-sky-600/20">
+                <i class="fa-solid fa-download"></i>
+                <span>Export Progress File (JSON)</span>
+              </button>
+
+              <label class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center space-x-2 cursor-pointer transition-all border border-slate-700">
+                <i class="fa-solid fa-upload text-sky-400"></i>
+                <span>Import Progress File</span>
+                <input type="file" id="import-json-file" accept=".json" onchange="importProgressJSON(event)" class="hidden">
+              </label>
+
+              <button onclick="resetAllProgress()" class="px-4 py-2.5 rounded-xl bg-rose-900/40 hover:bg-rose-800/60 text-rose-300 border border-rose-700/40 text-xs font-semibold flex items-center space-x-2 transition-all ml-auto">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Reset Progress</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Global Audio & Notification Toast Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- APPLICATION JAVASCRIPT LOGIC -->
+  <script>
+    /* ==========================================================================
+       1. GLOBAL CURRICULUM DATA (12-WEEK ROADMAP & TOPICS)
+       ========================================================================== */
+    const CURRICULUM = [
+      {
+        week: 1,
+        title: "C++ Syntax, Output & Comments",
+        desc: "Learn fundamental structure, std::cout output stream, and commenting.",
+        topics: ["Syntax & Main Function", "std::cout & Newlines", "Single & Multi-line Comments"],
+        flashcards: [
+          {
+            frontTitle: "Structure of main()",
+            frontDesc: "Every C++ executable program requires a main entry point function.",
+            category: "SYNTAX",
+            code: "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Code executes here\n    return 0;\n}",
+            explanation: "#include <iostream> includes standard output library. main() is where execution starts."
+          },
+          {
+            frontTitle: "Output Stream (cout)",
+            frontDesc: "How do you send text to the console display?",
+            category: "OUTPUT",
+            code: "cout << \"Hello World!\" << endl;",
+            explanation: "std::cout uses insertion operator (<<) to display string literals."
+          },
+          {
+            frontTitle: "C++ Comments Syntax",
+            frontDesc: "Documenting code without affecting execution.",
+            category: "COMMENTS",
+            code: "// Single line comment\n\n/* Multi-line\n   comment block */",
+            explanation: "Use double slashes for single lines and /* */ for blocks."
+          }
+        ],
+        textExplanation: `
+          <h3 class="text-lg font-bold text-white mb-2">Week 1: C++ Basics & Syntax</h3>
+          <p>C++ is a cross-platform language used to create high-performance applications developed by Bjarne Stroustrup.</p>
+          <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 font-mono text-xs text-sky-300 my-3">
+            #include &lt;iostream&gt;<br>
+            using namespace std;<br><br>
+            int main() {<br>
+            &nbsp;&nbsp;cout &lt;&lt; "Hello World!";<br>
+            &nbsp;&nbsp;return 0;<br>
+            }
+          </div>
+          <p><strong>std::cout</strong> is used together with the insertion operator (&lt;&lt;) to output values/print text.</p>
+        `,
+        typingExercises: [
+          { prompt: 'Type statement to output "C++ Learning" followed by newline:', target: 'cout << "C++ Learning" << endl;' },
+          { prompt: 'Type single line comment saying "Main Entry Point":', target: '// Main Entry Point' },
+          { prompt: 'Type the standard return statement for main function:', target: 'return 0;' }
+        ]
+      },
+      {
+        week: 2,
+        title: "Variables & Data Types",
+        desc: "Master int, double, char, string, and bool types with identifiers.",
+        topics: ["Variable Declarations", "Primitive Data Types", "Identifiers & Constants"],
+        flashcards: [
+          {
+            frontTitle: "Declaring Variables",
+            frontDesc: "Syntax for storing data values in C++ memory locations.",
+            category: "VARIABLES",
+            code: "int myNum = 15;\ndouble myFloat = 5.99;\nchar myLetter = 'D';\nstring myText = \"Hello\";\nbool myBoolean = true;",
+            explanation: "Format: type variableName = value;"
+          },
+          {
+            frontTitle: "Constant Values (const)",
+            frontDesc: "Prevent variable values from being modified.",
+            category: "KEYWORDS",
+            code: "const int minutesPerPage = 60;\n// minutesPerPage = 10; // Error!",
+            explanation: "const keyword marks variable as unchangeable and read-only."
+          }
+        ],
+        textExplanation: `<p>Variables are containers for storing data values. Common types: int (integers), double (floating point numbers), char (single characters with single quotes), string (text with double quotes), bool (true/false).</p>`,
+        typingExercises: [
+          { prompt: 'Declare integer age with value 25:', target: 'int age = 25;' },
+          { prompt: 'Declare constant double PI with 3.1415:', target: 'const double PI = 3.1415;' }
+        ]
+      },
+      {
+        week: 3,
+        title: "User Input & Operators",
+        desc: "Handle cin console input and arithmetic/logical operators.",
+        topics: ["std::cin Stream", "Arithmetic Operators", "Comparison & Logical Ops"],
+        flashcards: [
+          {
+            frontTitle: "Console Input (cin)",
+            frontDesc: "Reading user input from keyboard.",
+            category: "INPUT",
+            code: "int x;\ncout << \"Type a number: \";\ncin >> x;\ncout << \"Your number: \" << x;",
+            explanation: "cin uses extraction operator (>>) to extract input into a variable."
+          }
+        ],
+        textExplanation: `<p>cin is a predefined variable that reads data from keyboard using the extraction operator (&gt;&gt;).</p>`,
+        typingExercises: [
+          { prompt: 'Type statement to extract input into variable age:', target: 'cin >> age;' }
+        ]
+      },
+      {
+        week: 4,
+        title: "Strings & Math Operations",
+        desc: "Concatenation, string length, indexing, and cmath functions.",
+        topics: ["String Concatenation", "Access & Modify Characters", "cmath Functions"],
+        flashcards: [
+          {
+            frontTitle: "String Methods",
+            frontDesc: "Getting string length and accessing characters.",
+            category: "STRINGS",
+            code: "string txt = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\";\ncout << \"Length: \" << txt.length();\ncout << \"First char: \" << txt[0];",
+            explanation: "length() or size() returns number of characters. 0-indexed bracket access."
+          }
+        ],
+        textExplanation: `<p>Strings are used for storing text. Use + operator or append() method to concatenate.</p>`,
+        typingExercises: [
+          { prompt: 'Type statement to get string length of text variable:', target: 'int len = text.length();' }
+        ]
+      },
+      {
+        week: 5,
+        title: "Booleans & If...Else Conditionals",
+        desc: "Branching control flow using if, else if, else, and ternary operator.",
+        topics: ["Boolean Expressions", "If...Else Syntax", "Ternary Short Hand"],
+        flashcards: [
+          {
+            frontTitle: "If...Else Decision Control",
+            frontDesc: "Execute different blocks based on true/false conditions.",
+            category: "CONTROL FLOW",
+            code: "int time = 20;\nif (time < 18) {\n    cout << \"Good day.\";\n} else {\n    cout << \"Good evening.\";\n}",
+            explanation: "Executes first block if condition evaluates to true, otherwise skips to else."
+          }
+        ],
+        textExplanation: `<p>Use if to specify a block of C++ code to be executed if a condition is true.</p>`,
+        typingExercises: [
+          { prompt: 'Type ternary statement assigning result "Pass" or "Fail" based on score >= 50:', target: 'string result = (score >= 50) ? "Pass" : "Fail";' }
+        ]
+      },
+      {
+        week: 6,
+        title: "Switch Statements & Loops",
+        desc: "Selection with switch, while, do-while, and range for loops.",
+        topics: ["Switch Case Break", "While & Do-While", "For & Range-Based For"],
+        flashcards: [
+          {
+            frontTitle: "For Loop Iteration",
+            frontDesc: "Loop through code a specific number of times.",
+            category: "LOOPS",
+            code: "for (int i = 0; i < 5; i++) {\n    cout << i << \"\\n\";\n}",
+            explanation: "Statement 1: initial variable, Statement 2: condition, Statement 3: increment."
+          }
+        ],
+        textExplanation: `<p>Loops execute a block of code as long as a specified condition is reached.</p>`,
+        typingExercises: [
+          { prompt: 'Type standard for-loop header to count i from 0 to 9:', target: 'for (int i = 0; i < 10; i++)' }
+        ]
+      },
+      {
+        week: 7,
+        title: "Break, Continue & Arrays",
+        desc: "Loop control keywords and fixed-size array data structures.",
+        topics: ["Break & Continue", "1D & Multi-Dimensional Arrays", "Array Size & Omitting"],
+        flashcards: [
+          {
+            frontTitle: "Arrays in C++",
+            frontDesc: "Storing multiple values of same type in single variable.",
+            category: "DATA STRUCTURES",
+            code: "string cars[4] = {\"Volvo\", \"BMW\", \"Ford\", \"Mazda\"};\ncout << cars[0]; // Outputs Volvo",
+            explanation: "Arrays are declared with type name[size] = { elements };"
+          }
+        ],
+        textExplanation: `<p>Arrays store elements sequentially. Access elements using zero-based index numbers.</p>`,
+        typingExercises: [
+          { prompt: 'Declare an array of 3 integers named nums with values 10, 20, 30:', target: 'int nums[3] = {10, 20, 30};' }
+        ]
+      },
+      {
+        week: 8,
+        title: "Structures & References",
+        desc: "Group related members with struct and reference variable aliases.",
+        topics: ["struct Creation & Access", "Named Structures", "References & Memory Address"],
+        flashcards: [
+          {
+            frontTitle: "Structures (struct)",
+            frontDesc: "Group several related variables of different types together.",
+            category: "STRUCTS",
+            code: "struct Person {\n    int age;\n    string name;\n};\n\nPerson p1;\np1.age = 25;",
+            explanation: "Members are accessed using dot operator (.) on object instance."
+          }
+        ],
+        textExplanation: `<p>Structures are lightweight user-defined types containing multiple variables.</p>`,
+        typingExercises: [
+          { prompt: 'Type code to get memory address of variable food:', target: '&food' }
+        ]
+      },
+      {
+        week: 9,
+        title: "Pointers & Memory Addresses",
+        desc: "Pointers, dereferencing operator, and modifying pointer memory.",
+        topics: ["Creating Pointers", "Dereferencing (*)", "Modifying Pointers"],
+        flashcards: [
+          {
+            frontTitle: "C++ Pointers",
+            frontDesc: "A variable that stores the memory address of another variable.",
+            category: "MEMORY",
+            code: "string food = \"Pizza\";\nstring* ptr = &food;\ncout << ptr;  // Memory address\ncout << *ptr; // Dereference: Pizza",
+            explanation: "Use & to get memory address, use * pointer type operator and dereference operator."
+          }
+        ],
+        textExplanation: `<p>A pointer holds the memory address of a value. Dereferencing (*) accesses the underlying value.</p>`,
+        typingExercises: [
+          { prompt: 'Declare pointer ptr pointing to integer x:', target: 'int* ptr = &x;' }
+        ]
+      },
+      {
+        week: 10,
+        title: "Functions & Parameters",
+        desc: "Declaration, definition, default parameters, and pass-by-reference.",
+        topics: ["Function Definition", "Parameters & Arguments", "Pass-by-Reference & Overloading"],
+        flashcards: [
+          {
+            frontTitle: "Pass-by-Reference",
+            frontDesc: "Passing variable reference into function to modify original value.",
+            category: "FUNCTIONS",
+            code: "void swapNums(int &x, int &y) {\n    int z = x;\n    x = y;\n    y = z;\n}",
+            explanation: "Using & in function parameters passes memory reference instead of value copy."
+          }
+        ],
+        textExplanation: `<p>Functions break programs into reusable modules. Overloading allows multiple functions with same name but different parameters.</p>`,
+        typingExercises: [
+          { prompt: 'Type void function header named greet taking string parameter name:', target: 'void greet(string name)' }
+        ]
+      },
+      {
+        week: 11,
+        title: "Object-Oriented Programming (OOP)",
+        desc: "Classes, objects, attributes, class methods, constructors, access specifiers.",
+        topics: ["Classes & Objects", "Constructors & Methods", "Public vs Private Access"],
+        flashcards: [
+          {
+            frontTitle: "Class Constructor",
+            frontDesc: "Special method automatically called when object of class is instantiated.",
+            category: "OOP",
+            code: "class Car {\npublic:\n    string brand;\n    Car(string x) {\n        brand = x;\n    }\n};",
+            explanation: "Constructor has exact same name as class and no return type."
+          }
+        ],
+        textExplanation: `<p>OOP combines data and functions into classes/objects. Access specifiers (public, private, protected) define visibility.</p>`,
+        typingExercises: [
+          { prompt: 'Declare class Car with public specifier:', target: 'class Car {\npublic:' }
+        ]
+      },
+      {
+        week: 12,
+        title: "Inheritance, Polymorphism & Files",
+        desc: "Derived classes, method overriding, fstream file I/O, and try/catch exceptions.",
+        topics: ["Inheritance & Encapsulation", "Polymorphism", "File I/O (fstream) & Exceptions"],
+        flashcards: [
+          {
+            frontTitle: "File Handling (fstream)",
+            frontDesc: "Reading and writing files with ofstream and ifstream.",
+            category: "FILES",
+            code: "#include <fstream>\n\nofstream MyFile(\"test.txt\");\nMyFile << \"Files in C++!\";\nMyFile.close();",
+            explanation: "ofstream creates/writes files, ifstream reads from files."
+          }
+        ],
+        textExplanation: `<p>Inheritance lets classes derive attributes/methods from base classes. Exceptions handle errors using try/catch blocks.</p>`,
+        typingExercises: [
+          { prompt: 'Type code to close file stream object MyFile:', target: 'MyFile.close();' }
+        ]
+      }
+    ];
+
+    /* ==========================================================================
+       2. STATE & STORAGE MANAGEMENT
+       ========================================================================== */
+    const DEFAULT_STATE = {
+      userId: 'usr_' + Math.random().toString(36).substring(2, 9),
+      userName: 'Learner',
+      currentWeek: 1,
+      completedWeeks: [],
+      totalXP: 0,
+      streakDays: 1,
+      lastActiveDate: new Date().toISOString(),
+      dailyProgressMins: 0,
+      soundEnabled: true,
+      quizHistory: []
+    };
+
+    let userState = { ...DEFAULT_STATE };
+    let currentLessonCardIdx = 0;
+    let activeDisplayMode = 'flashcard'; // 'flashcard' or 'text'
+    let typingCurrentIdx = 0;
+
+    // Quiz State
+    let currentQuizQuestions = [];
+    let currentQuizIndex = 0;
+    let quizUserAnswers = [];
+    let quizTimerInterval = null;
+    let quizSecondsElapsed = 0;
+
+    // Load State on Init
+    function loadLocalState() {
+      const saved = localStorage.getItem('cppmaster_user_state');
+      if (saved) {
+        try {
+          userState = { ...DEFAULT_STATE, ...JSON.parse(saved) };
+        } catch(e) {
+          console.error("Failed to parse saved state", e);
+        }
+      } else {
+        saveLocalState();
+      }
+      updateUIHeaderAndDashboard();
+    }
+
+    function saveLocalState() {
+      userState.lastActiveDate = new Date().toISOString();
+      localStorage.setItem('cppmaster_user_state', JSON.stringify(userState));
+      updateUIHeaderAndDashboard();
+    }
+
+    function updateUIHeaderAndDashboard() {
+      document.getElementById('header-streak').textContent = `${userState.streakDays} Day${userState.streakDays > 1 ? 's' : ''}`;
+      document.getElementById('header-xp').textContent = `${userState.totalXP} XP`;
+      document.getElementById('user-display-name').textContent = userState.userName;
+      document.getElementById('user-avatar').textContent = userState.userName.charAt(0).toUpperCase();
+      document.getElementById('user-level-badge').textContent = `Week ${userState.currentWeek} • ${userState.currentWeek > 6 ? 'Intermediate' : 'Beginner'}`;
+      
+      // Update Sync Form Inputs
+      document.getElementById('sync-user-name').value = userState.userName;
+      document.getElementById('sync-user-id').value = userState.userId;
+
+      // Update Daily Goal Progress Bar (Assume 30 mins goal)
+      const pct = Math.min(100, Math.round((userState.dailyProgressMins / 30) * 100));
+      document.getElementById('daily-progress-percent').textContent = `${pct}%`;
+      document.getElementById('daily-progress-bar').style.width = `${pct}%`;
+
+      // Update Dashboard View Elements
+      document.getElementById('dash-xp').textContent = userState.totalXP;
+      document.getElementById('dash-streak').textContent = `${userState.streakDays} Days`;
+      document.getElementById('dash-lessons').textContent = `${userState.completedWeeks.length} / 12`;
+      
+      const avgScore = userState.quizHistory.length 
+        ? Math.round(userState.quizHistory.reduce((acc, q) => acc + (q.score / q.total * 100), 0) / userState.quizHistory.length) 
+        : 0;
+      document.getElementById('dash-avg-score').textContent = `${avgScore}%`;
+
+      renderQuizHistoryList();
+      renderRoadmap();
+    }
+
+    /* ==========================================================================
+       3. AUDIO SYNTHESIZER (WEB AUDIO API)
+       ========================================================================== */
+    function playAudioTone(type) {
+      if (!userState.soundEnabled) return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+
+        if (type === 'correct') {
+          // Crisp Dual Chime Ping
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc1.type = 'sine';
+          osc2.type = 'triangle';
+          osc1.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+          osc2.frequency.setValueAtTime(659.25, ctx.currentTime); // E5
+          osc1.frequency.exponentialRampToValueAtTime(1046.50, ctx.currentTime + 0.15); // C6
+
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc1.start();
+          osc2.start();
+          osc1.stop(ctx.currentTime + 0.35);
+          osc2.stop(ctx.currentTime + 0.35);
+
+        } else if (type === 'incorrect') {
+          // Low Soft Error Buzz
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(160, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 0.25);
+
+          gain.gain.setValueAtTime(0.2, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start();
+          osc.stop(ctx.currentTime + 0.3);
+        }
+      } catch(e) {
+        console.log("Audio not allowed yet without gesture", e);
+      }
+    }
+
+    function toggleAudio() {
+      userState.soundEnabled = !userState.soundEnabled;
+      const icon = document.getElementById('sound-icon');
+      if (userState.soundEnabled) {
+        icon.className = 'fa-solid fa-volume-high';
+        showToast('Sound Effects Enabled');
+      } else {
+        icon.className = 'fa-solid fa-volume-xmark';
+        showToast('Sound Effects Muted');
+      }
+      saveLocalState();
+    }
+
+    /* ==========================================================================
+       4. NAVIGATION & TAB SWITCHING
+       ========================================================================== */
+    function switchTab(tabId) {
+      const views = ['roadmap', 'lesson', 'typing', 'quiz', 'dashboard', 'sync'];
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        const nav = document.getElementById(`nav-${v}`);
+        if (v === tabId) {
+          el.classList.remove('hidden');
+          if(nav) {
+            nav.className = 'w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all bg-sky-600 text-white shadow-lg shadow-sky-600/20';
+          }
+        } else {
+          el.classList.add('hidden');
+          if(nav) {
+            nav.className = 'w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-100 hover:bg-slate-800';
+          }
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ==========================================================================
+       5. ROADMAP VIEW CONTROLLER
+       ========================================================================== */
+    function renderRoadmap() {
+      const container = document.getElementById('roadmap-weeks-container');
+      container.innerHTML = '';
+
+      const completedCount = userState.completedWeeks.length;
+      document.getElementById('roadmap-completion-text').textContent = `${completedCount} of 12 Weeks Completed`;
+      const pct = Math.round((completedCount / 12) * 100);
+      document.getElementById('roadmap-progress-bar').style.width = `${pct}%`;
+
+      CURRICULUM.forEach((item) => {
+        const isCompleted = userState.completedWeeks.includes(item.week);
+        const isCurrent = userState.currentWeek === item.week;
+
+        const weekCard = document.createElement('div');
+        weekCard.className = `p-5 rounded-2xl border transition-all ${
+          isCurrent 
+            ? 'bg-slate-800/80 border-sky-500/80 shadow-lg shadow-sky-500/10' 
+            : isCompleted 
+              ? 'bg-slate-900/60 border-emerald-500/40' 
+              : 'bg-slate-900/40 border-slate-800 opacity-80'
+        }`;
+
+        weekCard.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-start space-x-4">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0 ${
+                isCompleted 
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                  : isCurrent 
+                    ? 'bg-sky-500 text-white shadow-md shadow-sky-500/30' 
+                    : 'bg-slate-800 text-slate-500 border border-slate-700'
+              }">
+                ${isCompleted ? '<i class="fa-solid fa-check"></i>' : `W${item.week}`}
+              </div>
+              <div>
+                <div class="flex items-center space-x-2">
+                  <h3 class="font-bold text-slate-100 text-base">${item.title}</h3>
+                  ${isCurrent ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-500/20 text-sky-400 border border-sky-500/30">ACTIVE</span>' : ''}
+                </div>
+                <p class="text-xs text-slate-400 mt-1">${item.desc}</p>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  ${item.topics.map(t => `<span class="px-2 py-0.5 rounded-md bg-slate-800 text-[11px] text-slate-300 font-mono">${t}</span>`).join('')}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex sm:flex-col justify-end space-x-2 sm:space-x-0 sm:space-y-2 flex-shrink-0">
+              <button onclick="openWeekLesson(${item.week})" class="px-4 py-2 rounded-xl text-xs font-semibold ${
+                isCurrent 
+                  ? 'bg-sky-600 hover:bg-sky-500 text-white shadow-md shadow-sky-600/20' 
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-200'
+              } transition-all">
+                Learn Concepts
+              </button>
+              <button onclick="startQuizForWeek(${item.week})" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-900/40 hover:bg-emerald-800/60 text-emerald-300 border border-emerald-700/50 transition-all">
+                Take Quiz
+              </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(weekCard);
+      });
+    }
+
+    function startCurrentActiveLesson() {
+      openWeekLesson(userState.currentWeek);
+    }
+
+    function openWeekLesson(weekNum) {
+      userState.currentWeek = weekNum;
+      currentLessonCardIdx = 0;
+      typingCurrentIdx = 0;
+      saveLocalState();
+      
+      const currData = CURRICULUM.find(w => w.week === weekNum) || CURRICULUM[0];
+      
+      document.getElementById('lesson-week-tag').textContent = `WEEK ${currData.week} • LESSON 1`;
+      document.getElementById('lesson-title').textContent = currData.title;
+      document.getElementById('text-reader-content').innerHTML = currData.textExplanation;
+      
+      renderFlashcard();
+      setupTypingExercise();
+      switchTab('lesson');
+    }
+
+    /* ==========================================================================
+       6. INTERACTIVE FLASHCARD ENGINE
+       ========================================================================== */
+    function setLessonDisplayMode(mode) {
+      activeDisplayMode = mode;
+      const flashcardWrapper = document.getElementById('flashcard-container-wrapper');
+      const textReader = document.getElementById('text-reader-container');
+      const fcBtn = document.getElementById('mode-flashcard-btn');
+      const txtBtn = document.getElementById('mode-text-btn');
+
+      if (mode === 'flashcard') {
+        flashcardWrapper.classList.remove('hidden');
+        textReader.classList.add('hidden');
+        fcBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 text-white shadow-sm transition-all';
+        txtBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all';
+      } else {
+        flashcardWrapper.classList.add('hidden');
+        textReader.classList.remove('hidden');
+        fcBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all';
+        txtBtn.className = 'px-4 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 text-white shadow-sm transition-all';
+      }
+    }
+
+    function renderFlashcard() {
+      const currData = CURRICULUM.find(w => w.week === userState.currentWeek) || CURRICULUM[0];
+      const cards = currData.flashcards;
+      if (!cards || cards.length === 0) return;
+
+      const card = cards[currentLessonCardIdx];
+      document.getElementById('card-category').textContent = card.category || 'CONCEPT';
+      document.getElementById('card-front-title').textContent = card.frontTitle;
+      document.getElementById('card-front-desc').textContent = card.frontDesc;
+      document.getElementById('card-back-code').textContent = card.code;
+      document.getElementById('card-back-explanation').textContent = card.explanation;
+      document.getElementById('flashcard-counter').textContent = `Card ${currentLessonCardIdx + 1} of ${cards.length}`;
+
+      // Reset Flip State
+      document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+    }
+
+    function flipCard() {
+      const inner = document.getElementById('flashcard-inner');
+      inner.classList.toggle('rotate-y-180');
+    }
+
+    function prevFlashcard() {
+      const currData = CURRICULUM.find(w => w.week === userState.currentWeek) || CURRICULUM[0];
+      if (currentLessonCardIdx > 0) {
+        currentLessonCardIdx--;
+        renderFlashcard();
+      }
+    }
+
+    function nextFlashcard() {
+      const currData = CURRICULUM.find(w => w.week === userState.currentWeek) || CURRICULUM[0];
+      if (currentLessonCardIdx < currData.flashcards.length - 1) {
+        currentLessonCardIdx++;
+        renderFlashcard();
+      } else {
+        showToast('You completed all flashcards for this lesson!');
+        userState.dailyProgressMins = Math.min(30, userState.dailyProgressMins + 5);
+        saveLocalState();
+      }
+    }
+
+    /* ==========================================================================
+       7. TYPING EXERCISE LAB
+       ========================================================================== */
+    function setupTypingExercise() {
+      const currData = CURRICULUM.find(w => w.week === userState.currentWeek) || CURRICULUM[0];
+      const exercises = currData.typingExercises || [];
+      if (exercises.length === 0) return;
+
+      const ex = exercises[typingCurrentIdx % exercises.length];
+      document.getElementById('typing-prompt').textContent = ex.prompt;
+      document.getElementById('typing-target-display').textContent = ex.target;
+      
+      const input = document.getElementById('typing-input');
+      input.value = '';
+      input.focus();
+
+      resetTypingFeedback();
+    }
+
+    function resetTypingFeedback() {
+      const statusIcon = document.getElementById('typing-status-icon');
+      const statusTitle = document.getElementById('typing-status-title');
+      const statusSub = document.getElementById('typing-status-sub');
+      const nextBtn = document.getElementById('typing-next-btn');
+
+      statusIcon.className = 'w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-slate-400';
+      statusIcon.innerHTML = '<i class="fa-solid fa-keyboard"></i>';
+      statusTitle.textContent = 'Start Typing...';
+      statusTitle.className = 'text-sm font-semibold text-slate-200';
+      statusSub.textContent = 'Match character by character.';
+      
+      nextBtn.disabled = true;
+      nextBtn.className = 'px-4 py-2 rounded-xl bg-slate-800 text-slate-500 font-semibold text-sm cursor-not-allowed transition-all';
+    }
+
+    function onTypingInputChange() {
+      const inputVal = document.getElementById('typing-input').value;
+      const targetVal = document.getElementById('typing-target-display').textContent.trim();
+
+      const statusIcon = document.getElementById('typing-status-icon');
+      const statusTitle = document.getElementById('typing-status-title');
+      const statusSub = document.getElementById('typing-status-sub');
+      const nextBtn = document.getElementById('typing-next-btn');
+
+      if (inputVal === targetVal) {
+        // Perfect Match!
+        playAudioTone('correct');
+        statusIcon.className = 'w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500 flex items-center justify-center';
+        statusIcon.innerHTML = '<i class="fa-solid fa-check"></i>';
+        statusTitle.textContent = 'Perfect Match!';
+        statusTitle.className = 'text-sm font-semibold text-emerald-400';
+        statusSub.textContent = 'Great syntax accuracy! +10 XP';
+
+        nextBtn.disabled = false;
+        nextBtn.className = 'px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-md shadow-emerald-600/20 cursor-pointer transition-all';
+      } else if (targetVal.startsWith(inputVal)) {
+        // Partial correct typing
+        statusIcon.className = 'w-8 h-8 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500 flex items-center justify-center';
+        statusIcon.innerHTML = '<i class="fa-solid fa-code"></i>';
+        statusTitle.textContent = 'Typing...';
+        statusTitle.className = 'text-sm font-semibold text-sky-400';
+        statusSub.textContent = `${inputVal.length} / ${targetVal.length} characters matched.`;
+      } else {
+        // Mismatch error
+        playAudioTone('incorrect');
+        statusIcon.className = 'w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500 flex items-center justify-center';
+        statusIcon.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        statusTitle.textContent = 'Syntax Mismatch';
+        statusTitle.className = 'text-sm font-semibold text-rose-400';
+        statusSub.textContent = 'Check spaces, quotes, and semicolons carefully.';
+      }
+    }
+
+    function nextTypingExercise() {
+      userState.totalXP += 10;
+      userState.dailyProgressMins = Math.min(30, userState.dailyProgressMins + 5);
+      saveLocalState();
+
+      typingCurrentIdx++;
+      const currData = CURRICULUM.find(w => w.week === userState.currentWeek) || CURRICULUM[0];
+      const exercises = currData.typingExercises || [];
+
+      if (typingCurrentIdx < exercises.length) {
+        setupTypingExercise();
+        showToast('+10 XP Earned!');
+      } else {
+        showToast('All typing exercises finished for this module!');
+        switchTab('quiz');
+      }
+    }
+
+    /* ==========================================================================
+       8. DYNAMIC QUIZ GENERATION ENGINE (15 DYNAMIC QUESTIONS PER ATTEMPT)
+       ========================================================================== */
+    const VARIABLE_NAMES = ['count', 'score', 'total', 'temp', 'speed', 'limit', 'item', 'index', 'factor', 'ratio'];
+    const DUMMY_STRINGS = ['"Apple"', '"C++"', '"SoloLearn"', '"Code"', '"Developer"', '"Stream"', '"Object"', '"Data"'];
+
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function getRandomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function startQuizForWeek(weekNum) {
+      userState.currentWeek = weekNum;
+      saveLocalState();
+      switchTab('quiz');
+      startDynamicQuiz();
+    }
+
+    function startQuizForCurrentLesson() {
+      switchTab('quiz');
+      startDynamicQuiz();
+    }
+
+    function generateDynamicQuestionPool(weekNum) {
+      const questions = [];
+      const v1 = getRandomItem(VARIABLE_NAMES);
+      const n1 = getRandomInt(5, 50);
+      const n2 = getRandomInt(2, 10);
+      const strVal = getRandomItem(DUMMY_STRINGS);
+
+      // Question 1: Output stream syntax
+      questions.push({
+        text: `Which operator is used with std::cout to insert output in C++?`,
+        type: 'mcq',
+        options: ['<<', '>>', '==', '::'],
+        correctIdx: 0,
+        explanation: 'The insertion operator (<<) is used with std::cout to format and display outputs.'
+      });
+
+      // Question 2: Dynamic Math calculation
+      questions.push({
+        code: `int ${v1} = ${n1};\nint val = ${v1} + ${n2};\ncout << val;`,
+        text: `What is the exact console output of the code snippet above?`,
+        type: 'mcq',
+        options: [`${n1 + n2}`, `${n1}${n2}`, `${n1 - n2}`, `${n1 * n2}`],
+        correctIdx: 0,
+        explanation: `Variable ${v1} (${n1}) plus ${n2} equals ${n1 + n2}.`
+      });
+
+      // Question 3: Type deduction
+      questions.push({
+        text: `Which data type should be used to store a value like ${n1}.${n2}?`,
+        type: 'mcq',
+        options: ['double', 'int', 'bool', 'char'],
+        correctIdx: 0,
+        explanation: 'Floating-point decimal numbers require double or float data types.'
+      });
+
+      // Question 4: Typing Question - Semicolon
+      questions.push({
+        text: `Type the required character used to terminate almost every C++ statement:`,
+        type: 'typing',
+        correctAnswer: ';',
+        explanation: 'In C++, statements must end with a semicolon (;).'
+      });
+
+      // Question 5: Comments
+      questions.push({
+        text: `How do you start a single-line comment in C++?`,
+        type: 'mcq',
+        options: ['//', '/*', '#', '<!--'],
+        correctIdx: 0,
+        explanation: 'Two forward slashes (//) indicate a single-line comment.'
+      });
+
+      // Question 6: Boolean evaluation
+      questions.push({
+        code: `bool isReady = (${n1} > ${n2});\ncout << isReady;`,
+        text: `What integer output will std::cout display for the boolean expression above?`,
+        type: 'mcq',
+        options: [`1`, `0`, `true`, `false`],
+        correctIdx: 0,
+        explanation: `Since ${n1} > ${n2} is true, std::cout prints boolean true as integer 1.`
+      });
+
+      // Question 7: String declaration typing
+      questions.push({
+        text: `Type the C++ keyword used to declare textual string variables:`,
+        type: 'typing',
+        correctAnswer: 'string',
+        explanation: 'The string keyword (from std::string) is used for text variables.'
+      });
+
+      // Question 8: Pointers symbol
+      questions.push({
+        text: `Which operator symbol is used to dereference a pointer variable to get its pointed value?`,
+        type: 'mcq',
+        options: ['*', '&', '->', '%'],
+        correctIdx: 0,
+        explanation: 'The asterisk (*) dereferences a pointer to access the stored value.'
+      });
+
+      // Question 9: Address-of operator
+      questions.push({
+        text: `Which operator returns the memory address of a variable?`,
+        type: 'mcq',
+        options: ['&', '*', '&&', 'ref'],
+        correctIdx: 0,
+        explanation: 'The ampersand (&) operator yields the memory address of a variable.'
+      });
+
+      // Question 10: Array indexing
+      questions.push({
+        code: `int arr[3] = {${n1}, ${n2}, ${n1 + 5}};\ncout << arr[1];`,
+        text: `What is the output of accessing element index 1?`,
+        type: 'mcq',
+        options: [`${n2}`, `${n1}`, `${n1 + 5}`, `0`],
+        correctIdx: 0,
+        explanation: `C++ arrays are 0-indexed. Index 0 is ${n1}, Index 1 is ${n2}.`
+      });
+
+      // Question 11: Constants typing
+      questions.push({
+        text: `Type the keyword used to make a variable read-only (constant):`,
+        type: 'typing',
+        correctAnswer: 'const',
+        explanation: 'The const keyword makes variable values unmodifiable.'
+      });
+
+      // Question 12: Loop header
+      questions.push({
+        code: `for (int i = 0; i < ${n2}; i++) {\n    // body\n}`,
+        text: `How many total iterations will this for-loop execute?`,
+        type: 'mcq',
+        options: [`${n2}`, `${n2 + 1}`, `${n2 - 1}`, `0`],
+        correctIdx: 0,
+        explanation: `Loop starts at i = 0 and runs while i < ${n2}, executing exactly ${n2} times.`
+      });
+
+      // Question 13: Header file inclusion
+      questions.push({
+        text: `Which preprocessor directive includes the standard input-output stream library?`,
+        type: 'mcq',
+        options: ['#include <iostream>', '#import <iostream>', '#include <stdio.h>', 'using namespace std;'],
+        correctIdx: 0,
+        explanation: '#include <iostream> brings in console input/output functions.'
+      });
+
+      // Question 14: Function return type typing
+      questions.push({
+        text: `Type the return type keyword for a C++ function that does NOT return any value:`,
+        type: 'typing',
+        correctAnswer: 'void',
+        explanation: 'void signifies that a function performs actions without returning a value.'
+      });
+
+      // Question 15: Object instantation
+      questions.push({
+        text: `In Object-Oriented C++, a specific instance of a class is called an:`,
+        type: 'mcq',
+        options: ['Object', 'Structure', 'Pointer', 'Function'],
+        correctIdx: 0,
+        explanation: 'An object is a dynamic runtime instance of a class template.'
+      });
+
+      // SHUFFLE MULTIPLE CHOICE OPTIONS RANDOMLY FOR EACH QUESTION
+      questions.forEach(q => {
+        if (q.type === 'mcq') {
+          const originalCorrectText = q.options[q.correctIdx];
+          // Fisher-Yates Shuffle
+          for (let i = q.options.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [q.options[i], q.options[j]] = [q.options[j], q.options[i]];
+          }
+          // Update correct index to new position
+          q.correctIdx = q.options.indexOf(originalCorrectText);
+        }
+      });
+
+      return questions;
+    }
+
+    function startDynamicQuiz() {
+      currentQuizQuestions = generateDynamicQuestionPool(userState.currentWeek);
+      currentQuizIndex = 0;
+      quizUserAnswers = [];
+      quizSecondsElapsed = 0;
+
+      document.getElementById('quiz-start-card').classList.add('hidden');
+      document.getElementById('quiz-results-card').classList.add('hidden');
+      document.getElementById('quiz-active-card').classList.remove('hidden');
+
+      // Start Quiz Timer
+      if (quizTimerInterval) clearInterval(quizTimerInterval);
+      quizTimerInterval = setInterval(() => {
+        quizSecondsElapsed++;
+        const mins = String(Math.floor(quizSecondsElapsed / 60)).padStart(2, '0');
+        const secs = String(quizSecondsElapsed % 60).padStart(2, '0');
+        document.getElementById('quiz-time-display').textContent = `${mins}:${secs}`;
+      }, 1000);
+
+      renderActiveQuizQuestion();
+    }
+
+    function renderActiveQuizQuestion() {
+      const q = currentQuizQuestions[currentQuizIndex];
+      const total = currentQuizQuestions.length;
+
+      document.getElementById('quiz-topic-tag').textContent = `WEEK ${userState.currentWeek} ASSESSMENT`;
+      document.getElementById('quiz-question-counter').textContent = `Question ${currentQuizIndex + 1} of ${total}`;
+      
+      const pct = Math.round(((currentQuizIndex + 1) / total) * 100);
+      document.getElementById('quiz-progress-bar').style.width = `${pct}%`;
+
+      document.getElementById('quiz-question-text').textContent = q.text;
+
+      // Show/Hide Code Snippet
+      const codeBox = document.getElementById('quiz-code-box');
+      if (q.code) {
+        codeBox.classList.remove('hidden');
+        document.getElementById('quiz-code-text').textContent = q.code;
+      } else {
+        codeBox.classList.add('hidden');
+      }
+
+      // Hide Feedback Banner & Enable Submit Button
+      document.getElementById('quiz-feedback-banner').classList.add('hidden');
+      const submitBtn = document.getElementById('quiz-submit-btn');
+      submitBtn.disabled = false;
+      submitBtn.className = 'ml-auto px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm shadow-lg shadow-sky-600/20 transition-all';
+
+      // Render Options vs Typing
+      const optionsContainer = document.getElementById('quiz-options-container');
+      const typingContainer = document.getElementById('quiz-typing-container');
+
+      if (q.type === 'mcq') {
+        optionsContainer.classList.remove('hidden');
+        typingContainer.classList.add('hidden');
+        optionsContainer.innerHTML = '';
+
+        const letters = ['A', 'B', 'C', 'D'];
+        q.options.forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.onclick = () => selectMCQOption(idx);
+          btn.className = `mcq-option-btn text-left p-4 rounded-xl bg-slate-800/80 border border-slate-700 hover:border-sky-500 hover:bg-slate-800 text-slate-200 text-sm font-medium flex items-center space-x-3 transition-all`;
+          btn.setAttribute('data-idx', idx);
+          btn.innerHTML = `
+            <span class="w-7 h-7 rounded-lg bg-slate-700/80 text-slate-300 font-mono text-xs flex items-center justify-center border border-slate-600 flex-shrink-0">${letters[idx]}</span>
+            <span class="font-mono text-sm">${escapeHTML(opt)}</span>
+          `;
+          optionsContainer.appendChild(btn);
+        });
+      } else {
+        optionsContainer.classList.add('hidden');
+        typingContainer.classList.remove('hidden');
+        const input = document.getElementById('quiz-type-input');
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    let selectedMCQIdx = null;
+    function selectMCQOption(idx) {
+      selectedMCQIdx = idx;
+      const btns = document.querySelectorAll('.mcq-option-btn');
+      btns.forEach(btn => {
+        const bIdx = parseInt(btn.getAttribute('data-idx'));
+        if (bIdx === idx) {
+          btn.className = 'mcq-option-btn text-left p-4 rounded-xl bg-sky-950/80 border-2 border-sky-500 text-white text-sm font-medium flex items-center space-x-3 transition-all';
+        } else {
+          btn.className = 'mcq-option-btn text-left p-4 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-400 text-sm font-medium flex items-center space-x-3 transition-all';
+        }
+      });
+    }
+
+    function submitQuizAnswer() {
+      const q = currentQuizQuestions[currentQuizIndex];
+      let userAns = null;
+      let isCorrect = false;
+
+      if (q.type === 'mcq') {
+        if (selectedMCQIdx === null) {
+          showToast('Please select an option first!');
+          return;
+        }
+        userAns = selectedMCQIdx;
+        isCorrect = (selectedMCQIdx === q.correctIdx);
+      } else {
+        const val = document.getElementById('quiz-type-input').value.trim();
+        if (!val) {
+          showToast('Please type your answer!');
+          return;
+        }
+        userAns = val;
+        isCorrect = (val.toLowerCase() === q.correctAnswer.toLowerCase());
+      }
+
+      // Audio & Feedback
+      if (isCorrect) {
+        playAudioTone('correct');
+      } else {
+        playAudioTone('incorrect');
+      }
+
+      quizUserAnswers.push({
+        questionText: q.text,
+        isCorrect,
+        userAnsDisplay: q.type === 'mcq' ? q.options[userAns] : userAns,
+        correctAnsDisplay: q.type === 'mcq' ? q.options[q.correctIdx] : q.correctAnswer,
+        explanation: q.explanation
+      });
+
+      selectedMCQIdx = null;
+      currentQuizIndex++;
+
+      if (currentQuizIndex < currentQuizQuestions.length) {
+        renderActiveQuizQuestion();
+      } else {
+        finishQuizAssessment();
+      }
+    }
+
+    function finishQuizAssessment() {
+      if (quizTimerInterval) clearInterval(quizTimerInterval);
+
+      const correctCount = quizUserAnswers.filter(a => a.isCorrect).length;
+      const total = quizUserAnswers.length;
+      const pct = Math.round((correctCount / total) * 100);
+      const earnedXP = correctCount * 15;
+
+      // Update State
+      userState.totalXP += earnedXP;
+      userState.dailyProgressMins = Math.min(30, userState.dailyProgressMins + 15);
+      
+      if (pct >= 70 && !userState.completedWeeks.includes(userState.currentWeek)) {
+        userState.completedWeeks.push(userState.currentWeek);
+      }
+
+      userState.quizHistory.unshift({
+        date: new Date().toLocaleDateString(),
+        week: userState.currentWeek,
+        score: correctCount,
+        total,
+        timeSecs: quizSecondsElapsed
+      });
+
+      saveLocalState();
+
+      // Display Results UI
+      document.getElementById('quiz-active-card').classList.add('hidden');
+      document.getElementById('quiz-results-card').classList.remove('hidden');
+
+      document.getElementById('res-score-num').textContent = `${correctCount} / ${total}`;
+      document.getElementById('res-accuracy-num').textContent = `${pct}%`;
+      document.getElementById('res-xp-num').textContent = `+${earnedXP} XP`;
+      
+      const mins = String(Math.floor(quizSecondsElapsed / 60)).padStart(2, '0');
+      const secs = String(quizSecondsElapsed % 60).padStart(2, '0');
+      document.getElementById('res-time-num').textContent = `${mins}:${secs}`;
+
+      // Populate Review List
+      const reviewList = document.getElementById('quiz-review-list');
+      reviewList.innerHTML = '';
+
+      quizUserAnswers.forEach((ans, i) => {
+        const item = document.createElement('div');
+        item.className = `p-3.5 rounded-xl border ${
+          ans.isCorrect ? 'bg-emerald-950/20 border-emerald-800/40' : 'bg-rose-950/20 border-rose-800/40'
+        } space-y-1 text-xs`;
+
+        item.innerHTML = `
+          <div class="flex items-center justify-between font-semibold">
+            <span class="${ans.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">
+              Q${i + 1}: ${ans.isCorrect ? 'Correct ✓' : 'Incorrect ✗'}
+            </span>
+            <span class="text-slate-400 font-mono">${ans.questionText}</span>
+          </div>
+          <div class="text-slate-300">
+            <span>Your Answer: </span>
+            <span class="font-mono ${ans.isCorrect ? 'text-emerald-300' : 'text-rose-300'}">${escapeHTML(ans.userAnsDisplay)}</span>
+          </div>
+          ${!ans.isCorrect ? `<div class="text-slate-300">Correct Answer: <span class="font-mono text-emerald-400">${escapeHTML(ans.correctAnsDisplay)}</span></div>` : ''}
+          <p class="text-[11px] text-slate-400 pt-1 border-t border-slate-800/60">${ans.explanation}</p>
+        `;
+        reviewList.appendChild(item);
+      });
+    }
+
+    /* ==========================================================================
+       9. DASHBOARD & HISTORY RENDERER
+       ========================================================================== */
+    function renderQuizHistoryList() {
+      const container = document.getElementById('dash-history-list');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (userState.quizHistory.length === 0) {
+        container.innerHTML = `<div class="text-xs text-slate-500 py-4 text-center">No quiz attempts recorded yet. Complete your first 15-question quiz!</div>`;
+        return;
+      }
+
+      userState.quizHistory.slice(0, 10).forEach(q => {
+        const item = document.createElement('div');
+        item.className = 'p-3 rounded-xl bg-slate-800/40 border border-slate-700/40 flex items-center justify-between text-xs';
+        const mins = String(Math.floor(q.timeSecs / 60)).padStart(2, '0');
+        const secs = String(q.timeSecs % 60).padStart(2, '0');
+        item.innerHTML = `
+          <div>
+            <div class="font-bold text-slate-200">Week ${q.week} Dynamic Assessment</div>
+            <div class="text-[11px] text-slate-400">${q.date} • Duration ${mins}:${secs}</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-sky-400">${q.score} / ${q.total}</div>
+            <div class="text-[10px] text-emerald-400 font-semibold">${Math.round((q.score / q.total) * 100)}%</div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    /* ==========================================================================
+       10. SYNC & MANUAL IMPORT/EXPORT JSON BACKUP
+       ========================================================================== */
+    function updateUserName(newName) {
+      if (newName.trim()) {
+        userState.userName = newName.trim();
+        saveLocalState();
+        showToast('User profile updated!');
+      }
+    }
+
+    function exportProgressJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userState, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `cppmaster_backup_${userState.userName.toLowerCase()}_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast('Progress exported to JSON file!');
+    }
+
+    function importProgressJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const importedData = JSON.parse(e.target.result);
+          if (importedData.userId && importedData.currentWeek !== undefined) {
+            userState = { ...DEFAULT_STATE, ...importedData };
+            saveLocalState();
+            showToast('Progress successfully restored!');
+          } else {
+            showToast('Invalid backup file format!');
+          }
+        } catch(err) {
+          showToast('Error reading JSON file!');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetAllProgress() {
+      if (confirm('Are you sure you want to reset all learning progress, XP, and quiz records?')) {
+        userState = { ...DEFAULT_STATE, userId: 'usr_' + Math.random().toString(36).substring(2, 9) };
+        saveLocalState();
+        showToast('Progress reset to Week 1.');
+        renderRoadmap();
+      }
+    }
+
+    /* Helper Utilities */
+    function showToast(msg) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-100 text-xs font-semibold shadow-2xl transition-all duration-300 pointer-events-auto flex items-center space-x-2';
+      toast.innerHTML = `<i class="fa-solid fa-circle-info text-sky-400"></i><span>${escapeHTML(msg)}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function escapeHTML(str) {
+      if (typeof str !== 'string') return str;
+      return str.replace(/[&<>'"]/g, 
+        tag => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          "'": '&#39;',
+          '"': '&quot;'
+        }[tag] || tag)
+      );
+    }
+
+    /* Initialize Application on Load */
+    window.onload = function() {
+      loadLocalState();
+      renderRoadmap();
+      openWeekLesson(userState.currentWeek);
+    };
+  </script>
+</body>
+</html>
