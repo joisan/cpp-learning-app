@@ -31,19 +31,29 @@
 
   // Function to load learning progress from Supabase
   async function loadProgressFromSupabase(userId) {
+  try {
     const { data, error } = await supabaseClient
       .from('user_progress')
       .select('progress_data')
-      .eq('user_id', userId)
-      .single();
+      .eq('user_id', userId); // Removed .single() to prevent errors when no record exists
 
     if (error) {
-      console.log('No existing cloud progress found or error:', error.message);
+      console.log('Query note:', error.message);
       return null;
     }
     
-    return data ? data.progress_data : null;
+    // If a record is found in the cloud, return its progress data
+    if (data && data.length > 0) {
+      return data[0].progress_data;
+    }
+    
+    // If no record exists yet, return null cleanly without errors
+    return null;
+  } catch (err) {
+    console.error('Network error while loading from Supabase:', err);
+    return null;
   }
+}
 </script>
   <script>
     // Run this function automatically when the web page loads
