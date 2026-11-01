@@ -45,6 +45,68 @@
     return data ? data.progress_data : null;
   }
 </script>
+  <script>
+    // Run this function automatically when the web page loads
+window.addEventListener('DOMContentLoaded', async () => {
+  // 1. Check if this browser already has a saved user ID
+  let userId = localStorage.getItem('cpp_master_user_id');
+
+  if (!userId) {
+    // If it's a brand new device/browser and no ID exists, create one
+    userId = 'user_' + Math.random().toString(36).substring(2, 11);
+    localStorage.setItem('cpp_master_user_id', userId);
+    console.log('Generated new user ID for this device:', userId);
+    return; // Stop here since there is no cloud data for a brand new ID
+  }
+
+  // 2. If a user ID exists, fetch their progress from Supabase
+  console.log('Fetching cloud progress for user ID:', userId);
+  const cloudProgress = await loadProgressFromSupabase(userId);
+
+  if (cloudProgress) {
+    // 3. Save the retrieved cloud data into local storage
+    localStorage.setItem('cpp_master_progress', JSON.stringify(cloudProgress));
+    
+    // 4. Update your website interface with the restored data
+    updateUIWithProgress(cloudProgress);
+    
+    console.log('Progress successfully restored from Supabase!');
+  } else {
+    console.log('No cloud record found. Using existing local data.');
+  }
+});
+ async function loadProgressFromSupabase(userId) {
+  try {
+    const { data, error } = await supabaseClient
+      .from('user_progress')
+      .select('progress_data')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      console.log('Query note:', error.message);
+      return null;
+    }
+    
+    return data ? data.progress_data : null;
+  } catch (err) {
+    console.error('Network error while loading from Supabase:', err);
+    return null;
+  }
+}
+function updateUIWithProgress(progressData) {
+  // Example: Update HTML elements with restored values
+  // Adjust these element IDs to match your actual HTML structure
+  
+  if (document.getElementById('current-level-display')) {
+    document.getElementById('current-level-display').innerText = progressData.level || 1;
+  }
+  
+  if (document.getElementById('last-score-display')) {
+    document.getElementById('last-score-display').innerText = progressData.lastScore || 0;
+  }
+}
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CppMaster - Interactive C++ Learning Platform</title>
